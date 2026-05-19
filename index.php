@@ -59,7 +59,7 @@ if (!empty($_SESSION['active'])) {
 <body class="hold-transition login-page">
 <div class="login-box">
   <div class="login-logo">
-    <b>Restaurante Aloha</b>
+    <b>Aloha V 1.0 2026</b>
   </div>
   <!-- /.login-logo -->
   <div class="card">

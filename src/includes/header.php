@@ -139,16 +139,10 @@ if (empty($_SESSION['active'])) {
                                             <p>Usuarios</p>
                                         </a>
                                     </li>
-                                    <!-- <li class="nav-item">
+                                    <li class="nav-item">
                                         <a href="config.php" class="nav-link">
                                             <i class="far fa-circle nav-icon"></i>
-                                            <p>Configuraciones</p>
-                                        </a>
-                                    </li> -->
-                                    <li class="nav-item">
-                                        <a href="procesar_sucursal.php" class="nav-link">
-                                            <i class="far fa-circle nav-icon"></i>
-                                            <p>Sucursales</p>
+                                            <p>Datos de empresa</p>
                                         </a>
                                     </li>
                                 </ul>
