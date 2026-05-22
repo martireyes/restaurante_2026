@@ -88,6 +88,24 @@ if (isset($_GET['detalle'])) {
     $id_sala = $_GET['id_sala'];
     $id_user = $_SESSION['idUser'];
     $mesa = $_GET['mesa'];
+    $conexion->begin_transaction();
+    try {
+        // 1. Insertar en la tabla 'facturas'
+        // 2. Bucle para insertar filas en 'factura_detalles'
+        // 3. Insertar en 'cobranzas_recibos' y 'cobranzas_detalles'
+         
+        // 4. SI LA FACTURA ES CRÉDITO:
+    if ($tipo_factura == 'Crédito') {
+        // Insertar registro en 'cuentas_a_cobrar'
+    }
+
+    // 5. Modificar el estado del pedido original a 'Pagado'
+    
+    $conexion->commit(); // Si todo salió bien, se guardan los cambios de forma definitiva
+    } catch (Exception $e) {
+    $conexion->rollback(); // Si algo falló, se deshacen todos los pasos para no dejar basura en la BD
+    echo json_decode(["status" => "error", "message" => $e->getMessage()]);
+    }
     $insertar = mysqli_query($conexion, "UPDATE pedidos SET estado='FINALIZADO' WHERE id_sala=$id_sala AND num_mesa=$mesa AND estado='PENDIENTE' AND id_usuario=$id_user");
     if ($insertar) {
         $sala = mysqli_query($conexion, "SELECT * FROM salas WHERE id = $id_sala");
