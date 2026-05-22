@@ -179,6 +179,139 @@ CREATE TABLE `usuarios` (
 INSERT INTO `usuarios` (`id`, `nombre`, `correo`, `pass`, `rol`, `estado`) VALUES
 (1, 'SISTEMAS', 'admin@gmail.com', '21232f297a57a5a743894a0e4a801fc3', 1, 1);
 
+
+CREATE TABLE clientes (
+    id_clientes INT AUTO_INCREMENT PRIMARY KEY,
+    ruc_clientes VARCHAR(20) NOT NULL UNIQUE, -- Soporta guiones (ej: 1234567-8) o cédulas limpias
+    razonsocial_clientes VARCHAR(150) NOT NULL,
+    direc_clientes VARCHAR(255) NULL,
+    tel_clientes VARCHAR(50) NULL,
+    estado_clientes INT DEFAULT 1, -- 1 = Activo, 0 = Inactivo
+    createdat_clientes TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+CREATE TABLE caja_turnos (
+    id_cajaturnos INT AUTO_INCREMENT PRIMARY KEY,
+    id_usuario INT NOT NULL,
+    id_sucursal INT NOT NULL,
+    apertura_cajaturnos DATETIME NOT NULL,
+    montoinicial_cajaturnos NUMERIC(10) NOT NULL DEFAULT 0,
+    cierre_cajaturnos DATETIME NULL,
+    montofinalsis_cajaturnos NUMERIC(10) NOT NULL DEFAULT 0,
+    montofinalreal_cajaturnos NUMERIC(10) NOT NULL DEFAULT 0,
+    discrepancia_cajaturnos NUMERIC(10) NOT NULL DEFAULT 0,
+    estado_cajaturnos VARCHAR(20) DEFAULT 'Abierto',
+    FOREIGN KEY (id_usuario) REFERENCES usuarios(id),
+    FOREIGN KEY (id_sucursal) REFERENCES sucursales(id)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+CREATE TABLE arqueo_detalles (
+    id_arqueos INT AUTO_INCREMENT PRIMARY KEY,
+    id_cajaturnos INT NOT NULL,
+    nombre_arqueos INT NOT NULL,
+    cant_arqueos INT NOT NULL DEFAULT 0,
+    subtotal_arqueos NUMERIC(10) NOT NULL,
+    FOREIGN KEY (id_cajaturnos) REFERENCES caja_turnos(id_cajaturnos) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+
+CREATE TABLE facturas (
+    id_facturas INT AUTO_INCREMENT PRIMARY KEY,
+    id_ped INT NULL,
+    id_clientes INT NOT NULL,
+    id_cajaturnos INT NOT NULL,
+    nro_facturas VARCHAR(20) NOT NULL UNIQUE,
+    timbrado_facturas VARCHAR(20) NOT NULL,
+    emision_facturas DATETIME NOT NULL,
+    tipo_facturas VARCHAR(15) NOT NULL,
+    exenta_facturas NUMERIC(10) NOT NULL DEFAULT 0,
+    iva5_facturas NUMERIC(10) NOT NULL DEFAULT 0,
+    iva10_facturas NUMERIC(10) NOT NULL DEFAULT 0,
+    total_facturas NUMERIC(10) NOT NULL DEFAULT 0,
+    estado_facturas VARCHAR(15) DEFAULT 'Emitido',
+    FOREIGN KEY (id_clientes) REFERENCES clientes(id_clientes),
+    FOREIGN KEY (id_cajaturnos) REFERENCES caja_turnos(id_cajaturnos)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+CREATE TABLE factura_detalles (
+    id_facdetalles INT AUTO_INCREMENT PRIMARY KEY,
+    id_facturas INT NOT NULL,
+    id_platos INT NOT NULL,
+    cant_facdetalles INT NOT NULL,
+    preunitario_facdetalles NUMERIC(10) NOT NULL,
+    porciva_facdetalles INT NOT NULL,
+    subtotal_facdetalles NUMERIC(10) NOT NULL,
+    FOREIGN KEY (id_facturas) REFERENCES facturas(id_facturas) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+CREATE TABLE cuentas_cobrar (
+    id_cobrar INT AUTO_INCREMENT PRIMARY KEY,
+    id_facturas INT NOT NULL,
+    total_cobrar NUMERIC(10) NOT NULL,
+    saldo_cobrar NUMERIC(10) NOT NULL,
+    fecha_cobrar DATE NOT NULL,
+    estado_cobrar VARCHAR(20) DEFAULT 'Pendiente',
+    FOREIGN KEY (id_facturas) REFERENCES facturas(id_Facturas)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+CREATE TABLE cobranzas_recibos (
+    id_cobrecibos INT AUTO_INCREMENT PRIMARY KEY,
+    id_cajaturnos INT NOT NULL,
+    nro_recibo_cobrecibos VARCHAR(20) NOT NULL UNIQUE,
+    total_cobrado_cobrecibos NUMERIC(10) NOT NULL,
+    fecha_cobro_cobrecibos DATETIME NOT NULL,
+    FOREIGN KEY (id_cajaturnos) REFERENCES caja_turnos(id_cajaturnos)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+CREATE TABLE cobranzas_detalles (
+    id_cobdetalles INT AUTO_INCREMENT PRIMARY KEY,
+    id_cobrecibos INT NOT NULL,
+    id_cobrar INT NULL,
+    id_facturas INT NULL,
+    forma_pago_cobdetalles VARCHAR(25) NOT NULL,
+    aportado_cobdetalles NUMERIC(10) NOT NULL,
+    detallestransac_cobdetalles VARCHAR(255) NULL,
+    FOREIGN KEY (id_cobrecibos) REFERENCES cobranzas_recibos(id_cobrecibos) ON DELETE CASCADE,
+    FOREIGN KEY (id_cobrar) REFERENCES cuentas_cobrar(id_cobrar)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+CREATE TABLE depositos_bancarios (
+    id_depositos INT AUTO_INCREMENT PRIMARY KEY,
+    id_cajaturnos INT NOT NULL,
+    bancoid_depositos VARCHAR(100) NOT NULL,
+    nroboleta_depositos VARCHAR(50) NOT NULL UNIQUE,
+    depositadoid_depositos NUMERIC(10) NOT NULL,
+    fecha_depositos DATETIME NOT NULL,
+    obserid_depositos VARCHAR(255) NULL,
+    FOREIGN KEY (id_cajaturnos) REFERENCES caja_turnos(id_cajaturnos)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+CREATE TABLE notas_credito_debito (
+    id_ncd INT AUTO_INCREMENT PRIMARY KEY,
+    id_facturas INT NOT NULL,
+    id_cajaturnos INT NOT NULL,
+    tipo_ncd VARCHAR(10) NOT NULL,
+    nro_nota_ncd VARCHAR(20) NOT NULL UNIQUE,
+    timbrado_ncd VARCHAR(20) NOT NULL,
+    motivo_ncd VARCHAR(255) NOT NULL,
+    totalmodificado_ncd DECIMAL(12,2) NOT NULL,
+    emision_ncd DATETIME NOT NULL,
+    FOREIGN KEY (id_facturas) REFERENCES facturas(id_facturas),
+    FOREIGN KEY (id_cajaturnos) REFERENCES caja_turnos(id_cajaturnos)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+CREATE TABLE notas_remision (
+    id_remision INT AUTO_INCREMENT PRIMARY KEY,
+    nro_remision VARCHAR(20) NOT NULL UNIQUE,
+    timbrado_remision VARCHAR(20) NOT NULL,
+    traslado_remision DATE NOT NULL,
+    id INT NOT NULL,
+    id_sucursal_destino INT NULL,
+    motivo_remision VARCHAR(100) NOT NULL,
+    estado_remision VARCHAR(15) DEFAULT 'Emitido',
+    FOREIGN KEY (id) REFERENCES sucursales(id)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
 --
 -- Índices para tablas volcadas
 --
