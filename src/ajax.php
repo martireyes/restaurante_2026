@@ -42,6 +42,8 @@ if (isset($_GET['detalle'])) {
     $id_user = $_SESSION['idUser'];
     $mesa = $_GET['mesa'];
     $observacion = $_GET['observacion'];
+    $sql_check = "SELECT id FROM caja_turnos WHERE id_usuario = ? AND estado = 'Abierto' AND id_sucursal = ? LIMIT 1";
+    // Si no devuelve registros, arrojas un JSON de error al Frontend impidiendo la venta.
     $consulta = mysqli_query($conexion, "SELECT d.*, p.nombre FROM temp_pedidos d INNER JOIN platos p ON d.id_producto = p.id WHERE d.id_usuario = $id_user");
     $total = 0;
     while ($row = mysqli_fetch_assoc($consulta)) {
